@@ -1,5 +1,6 @@
 package com.teamdimensional.multiblockednbt.component;
 
+import com.cleanroommc.multiblocked.api.capability.IO;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -84,8 +85,11 @@ public class NBTModificationRecipe {
         return new NBTModificationRecipe(mods, reqs);
     }
 
-    public ItemStack[] getMatchingStacks() {
-        // placeholder
-        return new ItemStack[]{new ItemStack(Items.IRON_AXE)};
+    public StackWithTooltip[] getMatchingStacks(IO io) {
+        ItemStack stack = new ItemStack(Items.IRON_AXE).setStackDisplayName("Any item");
+        StackWithTooltip pair = new StackWithTooltip(stack, io);
+        for (INBTRequirement mod : requirements) mod.modifyStack(pair);
+        for (INBTModifier mod : modifiers) mod.modifyStack(pair);
+        return new StackWithTooltip[]{pair};
     }
 }

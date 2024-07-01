@@ -1,8 +1,11 @@
 package com.teamdimensional.multiblockednbt.modifier;
 
+import com.cleanroommc.multiblocked.api.capability.IO;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.teamdimensional.multiblockednbt.api.INBTModifier;
+import com.teamdimensional.multiblockednbt.component.StackWithTooltip;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
@@ -82,5 +85,15 @@ public class NBTModifierEnchantment implements INBTModifier {
     @Override
     public String getName() {
         return "ench";
+    }
+
+    @Override
+    public void modifyStack(StackWithTooltip pair) {
+        if (pair.io != IO.IN) {
+            Enchantment ench = Enchantment.getEnchantmentByLocation(enchantment);
+            assert ench != null;
+            String modifiesEnch = I18n.format("multiblockednbt.modifier.enchantment", ench.getTranslatedName(targetLevel));
+            pair.addTooltip(modifiesEnch);
+        }
     }
 }

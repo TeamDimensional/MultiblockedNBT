@@ -1,0 +1,3 @@
+multiblocked.capability.item_nbt=Item NBT
+multiblockednbt.requirement.enchantment=Requires enchantment: %s
+multiblockednbt.modifier.enchantment=Sets enchantment: %s

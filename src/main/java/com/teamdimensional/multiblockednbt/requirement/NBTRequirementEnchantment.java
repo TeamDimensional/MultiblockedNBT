@@ -1,9 +1,11 @@
 package com.teamdimensional.multiblockednbt.requirement;
 
+import com.cleanroommc.multiblocked.api.capability.IO;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.teamdimensional.multiblockednbt.MultiblockedNBT;
 import com.teamdimensional.multiblockednbt.api.INBTRequirement;
+import com.teamdimensional.multiblockednbt.component.StackWithTooltip;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
@@ -56,5 +58,15 @@ public class NBTRequirementEnchantment implements INBTRequirement {
     @Override
     public String getName() {
         return "ench";
+    }
+
+    @Override
+    public void modifyStack(StackWithTooltip pair) {
+        if (pair.io != IO.OUT) {
+            Enchantment ench = Enchantment.getEnchantmentByLocation(enchantment);
+            assert ench != null;
+            String requiresEnch = I18n.format("multiblockednbt.requirement.enchantment", ench.getTranslatedName(targetLevel));
+            pair.addTooltip(requiresEnch);
+        }
     }
 }

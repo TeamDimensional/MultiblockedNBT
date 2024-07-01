@@ -7,6 +7,7 @@ import com.teamdimensional.multiblockednbt.factory.NBTModifierFactory;
 import com.teamdimensional.multiblockednbt.factory.NBTRequirementFactory;
 import com.teamdimensional.multiblockednbt.modifier.NBTModifierEnchantment;
 import com.teamdimensional.multiblockednbt.requirement.NBTRequirementEnchantment;
+import com.teamdimensional.multiblockednbt.requirement.NBTRequirementItem;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +29,7 @@ public class MultiblockedNBT {
         MbdCapabilities.registerCapability(ItemNBTMultiblockCapability.INSTANCE);
         NBTModifierFactory.register("ench", NBTModifierEnchantment::deserialize);
         NBTRequirementFactory.register("ench", NBTRequirementEnchantment::deserialize);
+        NBTRequirementFactory.register("id", NBTRequirementItem::deserialize);
         StorageProcessImplementation.register();
     }
 

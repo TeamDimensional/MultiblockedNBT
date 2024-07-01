@@ -4,10 +4,11 @@ import com.cleanroommc.multiblocked.api.capability.IO;
 import com.cleanroommc.multiblocked.api.capability.MultiblockCapability;
 import com.cleanroommc.multiblocked.api.capability.proxy.CapabilityProxy;
 import com.cleanroommc.multiblocked.api.capability.trait.CapabilityTrait;
+import com.cleanroommc.multiblocked.api.gui.widget.imp.recipe.ContentWidget;
 import com.cleanroommc.multiblocked.api.recipe.Recipe;
 import com.cleanroommc.multiblocked.jei.IJeiIngredientAdapter;
 import com.google.gson.*;
-import com.teamdimensional.multiblockednbt.MultiblockedNBT;
+import com.teamdimensional.multiblockednbt.component.NBTContentWidget;
 import com.teamdimensional.multiblockednbt.component.NBTModificationRecipe;
 import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IIngredientType;
@@ -73,6 +74,11 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
     @Override
     public JsonElement serialize(NBTModificationRecipe src, Type typeOfSrc, JsonSerializationContext context) {
         return src.serialize();
+    }
+
+    @Override
+    public ContentWidget<? super NBTModificationRecipe> createContentWidget() {
+        return new NBTContentWidget();
     }
 
     public static class ItemNBTCapabilityProxy extends KnowledgeableCapabilityProxy<IItemHandler, NBTModificationRecipe> {
@@ -154,7 +160,7 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
 
         @Override
         public Stream<ItemStack> apply(NBTModificationRecipe recipe) {
-            return Arrays.stream(recipe.getMatchingStacks());
+            return Arrays.stream(recipe.getMatchingStacks(IO.BOTH)).map(r -> r.stack);
         }
     }
 }
