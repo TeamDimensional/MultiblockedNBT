@@ -44,10 +44,11 @@ public class NBTModificationRecipe {
         return true;
     }
 
-    public void apply(ItemStack stack) {
+    public ItemStack apply(ItemStack stack) {
         for (INBTModifier mod : modifiers) {
-            mod.applyTo(stack);
+            stack = mod.applyTo(stack);
         }
+        return stack;
     }
 
     public JsonObject serialize() {

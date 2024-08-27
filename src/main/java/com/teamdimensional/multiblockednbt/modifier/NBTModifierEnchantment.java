@@ -48,7 +48,7 @@ public class NBTModifierEnchantment implements INBTModifier {
     }
 
     @Override
-    public void applyTo(ItemStack stack) {
+    public ItemStack applyTo(ItemStack stack) {
         Enchantment ench = Enchantment.getEnchantmentByLocation(enchantment);
         assert ench != null;
         // manual code here for reasons
@@ -64,6 +64,7 @@ public class NBTModifierEnchantment implements INBTModifier {
             }
         }
         if (!upgraded) stack.addEnchantment(ench, targetLevel);
+        return stack;
     }
 
 

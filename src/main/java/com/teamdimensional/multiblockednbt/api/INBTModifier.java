@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 
 public interface INBTModifier {
     boolean canApply(ItemStack stack);
-    void applyTo(ItemStack stack);
+    ItemStack applyTo(ItemStack stack);
     JsonElement serialize();
     String getName();
 

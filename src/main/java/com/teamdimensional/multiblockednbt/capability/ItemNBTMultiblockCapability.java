@@ -127,7 +127,7 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
                 if (stack != null && !stack.isEmpty()) {
                     while (iterator.hasNext()) {
                         NBTModificationRecipe ingredient = iterator.next();
-                        ingredient.apply(stack);
+                        stack = ingredient.apply(stack);
                         for (int i = 0; i < capability.getSlots(); i++) {
                             stack = capability.insertItem(i, stack.copy(), simulate);
                             if (stack.isEmpty()) break;
