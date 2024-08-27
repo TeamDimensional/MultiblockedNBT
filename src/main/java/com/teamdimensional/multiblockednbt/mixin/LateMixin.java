@@ -9,7 +9,7 @@ public class LateMixin implements ILateMixinLoader {
     @Override
     public List<String> getMixinConfigs() {
         List<String> lst = new ArrayList<>();
-        lst.add("mixins.multiblockednbt.json");
+        lst.add("mixins/mixins.multiblockednbt.json");
         return lst;
     }
 }
