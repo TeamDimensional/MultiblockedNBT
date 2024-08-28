@@ -1,20 +1,34 @@
-## TemplateDevEnv
+# Multiblocked NBT
 
-Template workspace for modding Minecraft 1.12.2. Licensed under MIT, it is made for public use.
+Multiblocked NBT is an addon [Multiblocked](https://www.curseforge.com/minecraft/mc-mods/multiblocked) for Minecraft 1.12.
+It allows writing recipes that rely on or modify NBT data in items and/or fluids. This is a (theoretical) example of a recipe
+that can be implemented through MultiNBT: "Consume any item with Smite and a Broken Spawner - Zombie to insert 27 stacks of Rotten Flesh into a shulker box in an input slot".
 
-This template currently utilizies **Gradle 8.7** + **[RetroFuturaGradle](https://github.com/GTNewHorizons/RetroFuturaGradle) 1.3.35** + **Forge 14.23.5.2847**.
+## Supported mods
 
-With **coremod and mixin support** that is easy to configure.
+The following mods are supported out of the box. You can also add your own requirements and modifiers if you want! Check the last section.
 
-### Instructions:
+Anything in quotes can be substituted by the modpack developer.
 
-1. Click `use this template` at the top.
-2. Clone the repository you have created with this template.
-3. In the local repository, run the command `gradlew setupDecompWorkspace`
-4. Open the project folder in IDEA.
-5. Right-click in IDEA `build.gradle` of your project, and select `Link Gradle Project`, after completion, hit `Refresh All` in the gradle tab on the right.
-6. Run `gradlew runClient` and `gradlew runServer`, or use the auto-imported run configurations in IntelliJ like `1. Run Client`.
+### Vanilla
 
-### Mixins:
+* Requirement: `Input item must be of type 'Iron Axe'`
+* Requirement: `Input item requires enchantment 'Sharpness' of at least level '2'`
+* Modifier: `Add enchantment 'Fire Aspect' of level '3' to input item`
+* Fluid requirement: `Input fluid must be of type 'Water'`
 
-- When writing Mixins on IntelliJ, it is advisable to use latest [MinecraftDev Fork for RetroFuturaGradle](https://github.com/eigenraven/MinecraftDev/releases).
+### Deep Resonance
+
+* Requirement: `Input fluid must be RCL with 'Purity' >= '0.5'`
+* Modifier: `Increase or reduce the 'Purity' of input RCL by '0.5'`
+
+## Warnings
+
+Currently Multiblocked NBT requires adding a Trait to your multiblock, which adds an ugly UI to it. Not adding traits may cause the multiblock to crash.
+I'm looking into ways to remedy that.
+
+## Writing addons
+
+Take a look at [this package](https://github.com/TeamDimensional/MultiblockedNBT/tree/master/src/main/java/com/teamdimensional/multiblockednbt/api).
+You want to implement the classes `INBTModifier` and/or `INBTRequirement` with either `T = ItemStack` or `T = FluidStack`.
+If you want to add a new option for `T`, it is a bit more convoluted and not described here.
