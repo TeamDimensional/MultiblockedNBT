@@ -1,13 +1,16 @@
 package com.teamdimensional.multiblockednbt.component;
 
+import com.cleanroommc.multiblocked.Multiblocked;
 import com.cleanroommc.multiblocked.api.gui.widget.imp.TankWidget;
 import com.cleanroommc.multiblocked.api.gui.widget.imp.recipe.ContentWidget;
 import com.teamdimensional.multiblockednbt.api.INBTRequirement;
 import com.teamdimensional.multiblockednbt.requirement.NBTRequirementFluid;
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,6 +20,14 @@ public class NBTContentWidgetFluid extends ContentWidget<NBTModificationRecipe<F
     @Override
     protected void onContentUpdate() {
         StackWithTooltip<FluidStack> pair = getFluidData(content);
+        if (Multiblocked.isClient()) {
+            List<String> tooltips = new ArrayList<>();
+            tooltips.add(pair.stack.getFluid().getLocalizedName(pair.stack));
+            tooltips.add(I18n.format("multiblocked.fluid.amount", pair.stack.amount, pair.stack.amount));
+            tooltips.addAll(pair.tooltip);
+            setHoverTooltip(tooltips.stream().reduce((a, b) -> a + "\n" + b).orElse("fluid"));
+        }
+
         if (handler != null) {
             handler.drainInternal(Integer.MAX_VALUE, true);
             handler.setCapacity(pair.stack.amount);

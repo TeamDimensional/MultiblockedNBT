@@ -1,3 +1,18 @@
 multiblocked.capability.item_nbt=Item NBT
+multiblocked.capability.fluid_nbt=Fluid NBT
+
 multiblockednbt.requirement.enchantment=Requires enchantment: %s
 multiblockednbt.modifier.enchantment=Sets enchantment: %s
+
+multiblockednbt.deepresonance.modifier.minimum.quality=Minimum quality: %d
+multiblockednbt.deepresonance.modifier.minimum.purity=Minimum purity: %d
+multiblockednbt.deepresonance.modifier.minimum.strength=Minimum strength: %d
+multiblockednbt.deepresonance.modifier.minimum.efficiency=Minimum efficiency: %d
+multiblockednbt.deepresonance.modifier.adds.quality=Adds %d quality (max. of %d)
+multiblockednbt.deepresonance.modifier.adds.purity=Adds %d purity (max. of %d)
+multiblockednbt.deepresonance.modifier.adds.strength=Adds %d strength (max. of %d)
+multiblockednbt.deepresonance.modifier.adds.efficiency=Adds %d efficiency (max. of %d)
+multiblockednbt.deepresonance.requirement.quality=Minimum quality: %d
+multiblockednbt.deepresonance.requirement.purity=Minimum purity: %d
+multiblockednbt.deepresonance.requirement.strength=Minimum strength: %d
+multiblockednbt.deepresonance.requirement.efficiency=Minimum efficiency: %d

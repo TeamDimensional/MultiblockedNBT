@@ -1,5 +1,21 @@
 apply from: 'gradle/scripts/helpers.gradle'
 
+def debug_deepresonance = false
+def run_xnet = false
+
+final def mod_dependencies = [
+        'had-enough-items-557549:4543375': [true],
+        'multiblocked-604054:5078880': [true],
+        'deep-resonance-233398:2704397': [debug_deepresonance],
+        'eleccore-227391:2853959': [debug_deepresonance],
+        'mcjtylib-233105:2745846': [debug_deepresonance, run_xnet],
+]
+
+final def runtime_dependencies = [
+        'top-245211:2667280': [true],
+        'xnet-260912:2745852': [run_xnet],
+]
+
 repositories {
     // Other repositories described by default:
     // CleanroomMC: https://maven.cleanroommc.com
@@ -63,9 +79,21 @@ dependencies {
     //     transitive = false
     // }
 
-    implementation rfg.deobf('curse.maven:had-enough-items-557549:4543375')
-    implementation rfg.deobf('curse.maven:multiblocked-604054:5078880')
+    mod_dependencies.entrySet().forEach {
+        def mod = rfg.deobf('curse.maven:' + it.key)
+        compileOnly mod
+        if (it.value.any { it.toBoolean() }) {
+            runtimeOnly mod
+        }
+    }
+
+    runtime_dependencies.entrySet().forEach {
+        def mod = rfg.deobf('curse.maven:' + it.key)
+        if (it.value.any { it.toBoolean() }) {
+            runtimeOnly mod
+        }
+    }
+
     // the mixin wouldn't compile without CT deobf
     compileOnly 'CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.673'
-    runtimeOnly rfg.deobf('curse.maven:mixin-booter-419286:5079135')
 }

@@ -109,7 +109,7 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<ItemNBTMul
         protected List<NBTModificationRecipeItem> handleRecipeInner(IO io, Recipe recipe, List<NBTModificationRecipeItem> left,
                                                                     @Nullable String slotName, boolean simulate) {
             IItemHandler capability = getCapability(slotName);
-            if (capability == null) return left;
+            if (capability == null || controller == null) return left;
 
             Iterator<NBTModificationRecipeItem> iterator = left.iterator();
             if (io == IO.IN) {

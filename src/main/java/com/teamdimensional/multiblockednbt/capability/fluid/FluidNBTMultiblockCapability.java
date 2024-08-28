@@ -24,7 +24,6 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.items.CapabilityItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,7 +38,7 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
     public static final FluidNBTMultiblockCapability INSTANCE = new FluidNBTMultiblockCapability();
 
     private FluidNBTMultiblockCapability() {
-        super("item_nbt", new Color(0xFFD96106).getRGB(), new FluidNBTJEIAdapter());
+        super("fluid_nbt", new Color(0xFF3357FF).getRGB(), new FluidNBTJEIAdapter());
     }
 
     @Override
@@ -49,7 +48,7 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
 
     @Override
     public boolean isBlockHasCapability(@Nonnull IO io, @Nonnull TileEntity tileEntity) {
-        return !getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, tileEntity).isEmpty();
+        return !getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, tileEntity).isEmpty();
     }
 
     @Override
@@ -94,14 +93,14 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
             super(INSTANCE, tileEntity, CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
         }
 
-        private void writeItemstack(FluidStack stack, boolean simulate) {
+        private void writeFluidstack(FluidStack stack, boolean simulate) {
             IStorageProcessCapabilityFluid capa = controller.getCapability(
                 StorageProcessStorageFluid.STORAGE_PROCESS_CAPABILITY, EnumFacing.NORTH);
             assert capa != null;
             capa.setItem(stack, simulate);
         }
 
-        private FluidStack readItemstack(boolean simulate) {
+        private FluidStack readFluidstack(boolean simulate) {
             IStorageProcessCapabilityFluid capa = controller.getCapability(
                 StorageProcessStorageFluid.STORAGE_PROCESS_CAPABILITY, EnumFacing.NORTH);
             assert capa != null;
@@ -112,7 +111,7 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
         protected List<NBTModificationRecipeFluid> handleRecipeInner(IO io, Recipe recipe, List<NBTModificationRecipeFluid> left,
                                                                     @Nullable String slotName, boolean simulate) {
             IFluidHandler capability = getCapability(slotName);
-            if (capability == null) return left;
+            if (capability == null || controller == null) return left;
 
             Iterator<NBTModificationRecipeFluid> iterator = left.iterator();
             if (io == IO.IN) {
@@ -124,7 +123,7 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
                         if (content != null && ingredient.canApply(content)) {
                             content.amount = ingredient.getProcessedQuantity();
                             FluidStack extracted = capability.drain(content, !simulate);
-                            writeItemstack(extracted, simulate);
+                            writeFluidstack(extracted, simulate);
                             getTileEntity().markDirty();
                             iterator.remove();
                             break;
@@ -132,7 +131,7 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
                     }
                 }
             } else if (io == IO.OUT) {
-                FluidStack stack = readItemstack(simulate);
+                FluidStack stack = readFluidstack(simulate);
                 if (stack != null && stack.amount > 0) {
                     while (iterator.hasNext()) {
                         NBTModificationRecipe<FluidStack> ingredient = iterator.next();
@@ -140,9 +139,9 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
                         int filledAmount = capability.fill(stack, !simulate);
                         if (filledAmount == stack.amount) {
                             iterator.remove();
-                            writeItemstack(new FluidStack(FluidRegistry.WATER, 0), simulate);
+                            writeFluidstack(new FluidStack(FluidRegistry.WATER, 0), simulate);
                         } else {
-                            writeItemstack(stack, simulate);
+                            writeFluidstack(stack, simulate);
                         }
                     }
                 }
@@ -164,6 +163,11 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
         @Override
         public NBTModificationRecipeFluid copy() {
             return fromBase(this);
+        }
+
+        @Override
+        public boolean canApply(FluidStack stack) {
+            return stack.amount >= getProcessedQuantity() && super.canApply(stack);
         }
     }
 

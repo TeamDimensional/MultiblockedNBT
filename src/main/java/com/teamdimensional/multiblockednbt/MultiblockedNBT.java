@@ -1,14 +1,19 @@
 package com.teamdimensional.multiblockednbt;
 
 import com.cleanroommc.multiblocked.api.registry.MbdCapabilities;
+import com.teamdimensional.multiblockednbt.capability.fluid.FluidNBTMultiblockCapability;
+import com.teamdimensional.multiblockednbt.capability.fluid.StorageProcessImplementationFluid;
 import com.teamdimensional.multiblockednbt.capability.item.ItemNBTMultiblockCapability;
 import com.teamdimensional.multiblockednbt.capability.item.StorageProcessImplementation;
 import com.teamdimensional.multiblockednbt.factory.NBTModifierFactory;
 import com.teamdimensional.multiblockednbt.factory.NBTRequirementFactory;
 import com.teamdimensional.multiblockednbt.modifier.NBTModifierEnchantment;
+import com.teamdimensional.multiblockednbt.modifier.NBTModifierRCLQuality;
 import com.teamdimensional.multiblockednbt.requirement.NBTRequirementEnchantment;
 import com.teamdimensional.multiblockednbt.requirement.NBTRequirementFluid;
 import com.teamdimensional.multiblockednbt.requirement.NBTRequirementItem;
+import com.teamdimensional.multiblockednbt.requirement.NBTRequirementRCLQuality;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
@@ -28,13 +33,21 @@ public class MultiblockedNBT {
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER.info("Hello From {}!", Tags.MOD_NAME);
         MbdCapabilities.registerCapability(ItemNBTMultiblockCapability.INSTANCE);
+        MbdCapabilities.registerCapability(FluidNBTMultiblockCapability.INSTANCE);
 
         NBTModifierFactory.register("minecraft:enchantment", NBTModifierEnchantment::deserialize);
         NBTRequirementFactory.register("minecraft:enchantment", NBTRequirementEnchantment::deserialize);
         NBTRequirementFactory.register("minecraft:item_id", NBTRequirementItem::deserialize);
 
         NBTRequirementFactory.register("minecraft:fluid_id", NBTRequirementFluid::deserialize);
+
+        if (Loader.isModLoaded("deepresonance")) {
+            NBTModifierFactory.register("deepresonance:rcl_quality", NBTModifierRCLQuality::deserialize);
+            NBTRequirementFactory.register("deepresonance:rcl_quality", NBTRequirementRCLQuality::deserialize);
+        }
+
         StorageProcessImplementation.register();
+        StorageProcessImplementationFluid.register();
     }
 
 }

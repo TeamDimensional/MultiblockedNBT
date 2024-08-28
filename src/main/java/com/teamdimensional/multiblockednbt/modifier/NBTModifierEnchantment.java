@@ -67,7 +67,6 @@ public class NBTModifierEnchantment implements INBTModifier<ItemStack> {
         return stack;
     }
 
-
     @Override
     public JsonElement serialize() {
         JsonObject output = new JsonObject();

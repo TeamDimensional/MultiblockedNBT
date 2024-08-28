@@ -41,7 +41,7 @@ public class NBTManagerRegistry {
         for (JsonElement elt : reqsArray) {
             INBTRequirement<T> req = (INBTRequirement<T>) NBTRequirementFactory.deserialize(elt);
             if (req == null) {
-                MultiblockedNBT.LOGGER.warn("Unable to create a modifier for the element {}!", elt);
+                MultiblockedNBT.LOGGER.warn("Unable to create a requirement for the element {}!", elt);
                 continue;
             }
             reqs.add(req);
