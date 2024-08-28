@@ -1,51 +1,64 @@
 package com.teamdimensional.multiblockednbt.component;
 
 import com.cleanroommc.multiblocked.api.capability.IO;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.teamdimensional.multiblockednbt.MultiblockedNBT;
 import com.teamdimensional.multiblockednbt.api.INBTModifier;
+import com.teamdimensional.multiblockednbt.api.INBTRecipeManager;
 import com.teamdimensional.multiblockednbt.api.INBTRequirement;
 import com.teamdimensional.multiblockednbt.factory.NBTModifierFactory;
 import com.teamdimensional.multiblockednbt.factory.NBTRequirementFactory;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class NBTModificationRecipe {
-    private final INBTModifier[] modifiers;
-    private final INBTRequirement[] requirements;
+public class NBTModificationRecipe<T> {
+    protected final List<INBTModifier<T>> modifiers;
+    protected final List<INBTRequirement<T>> requirements;
+    protected final INBTRecipeManager<T> manager;
 
-    public NBTModificationRecipe(INBTModifier[] modifiers, INBTRequirement[] requirements) {
+    public NBTModificationRecipe(INBTRecipeManager<T> manager, INBTModifier<T>[] modifiers, INBTRequirement<T>[] requirements) {
+        this(manager, Arrays.stream(modifiers).collect(Collectors.toList()), Arrays.stream(requirements).collect(Collectors.toList()));
+    }
+
+    public NBTModificationRecipe(INBTRecipeManager<T> manager, List<INBTModifier<T>> modifiers, List<INBTRequirement<T>> requirements) {
+        this.manager = manager;
         this.modifiers = modifiers;
         this.requirements = requirements;
     }
 
-    public NBTModificationRecipe(List<INBTModifier> modifiers, List<INBTRequirement> requirements) {
-        this(modifiers.toArray(new INBTModifier[0]), requirements.toArray(new INBTRequirement[0]));
+    public NBTModificationRecipe<T> copy() {
+        return new NBTModificationRecipe<>(manager, modifiers, requirements);
     }
 
-    public NBTModificationRecipe copy() {
-        return new NBTModificationRecipe(modifiers, requirements);
+    public List<INBTModifier<T>> getModifiers() {
+        return modifiers;
     }
 
-    public boolean canApply(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        for (INBTRequirement req : requirements) {
+    public List<INBTRequirement<T>> getRequirements() {
+        return requirements;
+    }
+
+    public boolean canApply(T stack) {
+        if (manager.isEmpty(stack)) return false;
+        for (INBTRequirement<T> req : requirements) {
             if (!req.satisfies(stack)) return false;
         }
-        for (INBTModifier mod : modifiers) {
+        for (INBTModifier<T> mod : modifiers) {
             if (!mod.canApply(stack)) return false;
         }
         return true;
     }
 
-    public ItemStack apply(ItemStack stack) {
-        for (INBTModifier mod : modifiers) {
+    public int getProcessedQuantity() {
+        // Temp
+        return this.manager.getProcessedQuantity();
+    }
+
+    public T apply(T stack) {
+        for (INBTModifier<T> mod : modifiers) {
             stack = mod.applyTo(stack);
         }
         return stack;
@@ -54,43 +67,18 @@ public class NBTModificationRecipe {
     public JsonObject serialize() {
         JsonObject obj = new JsonObject();
         JsonArray modifiers = new JsonArray();
-        for (INBTModifier mod : this.modifiers) modifiers.add(NBTModifierFactory.serialize(mod));
+        for (INBTModifier<T> mod : this.modifiers) modifiers.add(NBTModifierFactory.serialize(mod));
         obj.add("modifiers", modifiers);
         JsonArray requirements = new JsonArray();
-        for (INBTRequirement req : this.requirements) requirements.add(NBTRequirementFactory.serialize(req));
+        for (INBTRequirement<T> req : this.requirements) requirements.add(NBTRequirementFactory.serialize(req));
         obj.add("requirements", requirements);
         return obj;
     }
 
-    public static NBTModificationRecipe deserialize(JsonObject element) throws JsonParseException {
-        List<INBTModifier> mods = new LinkedList<>();
-        JsonArray modsArray = element.getAsJsonArray("modifiers");
-        for (JsonElement elt : modsArray) {
-            INBTModifier mod = NBTModifierFactory.deserialize(elt);
-            if (mod == null) {
-                MultiblockedNBT.LOGGER.warn("Unable to create a modifier for the element {}!", elt);
-                continue;
-            }
-            mods.add(mod);
-        }
-        List<INBTRequirement> reqs = new LinkedList<>();
-        JsonArray reqsArray = element.getAsJsonArray("requirements");
-        for (JsonElement elt : reqsArray) {
-            INBTRequirement req = NBTRequirementFactory.deserialize(elt);
-            if (req == null) {
-                MultiblockedNBT.LOGGER.warn("Unable to create a modifier for the element {}!", elt);
-                continue;
-            }
-            reqs.add(req);
-        }
-        return new NBTModificationRecipe(mods, reqs);
-    }
-
-    public StackWithTooltip[] getMatchingStacks(IO io) {
-        ItemStack stack = new ItemStack(Items.IRON_AXE).setStackDisplayName("Any item");
-        StackWithTooltip pair = new StackWithTooltip(stack, io);
-        for (INBTRequirement mod : requirements) mod.modifyStack(pair);
-        for (INBTModifier mod : modifiers) mod.modifyStack(pair);
-        return new StackWithTooltip[]{pair};
+    public List<StackWithTooltip<T>> getMatchingStacks(IO io) {
+        StackWithTooltip<T> pair = manager.getDefaultItem(io);
+        for (INBTRequirement<T> mod : requirements) mod.modifyStack(pair);
+        for (INBTModifier<T> mod : modifiers) mod.modifyStack(pair);
+        return ImmutableList.of(pair);
     }
 }

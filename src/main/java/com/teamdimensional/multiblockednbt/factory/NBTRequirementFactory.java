@@ -11,7 +11,7 @@ import java.util.Map;
 public class NBTRequirementFactory {
 
     public interface NBTRequirementSAM {
-        INBTRequirement create(JsonElement data);
+        INBTRequirement<?> create(JsonElement data);
     }
 
     private static final Map<String, NBTRequirementSAM> requirements = new HashMap<>();
@@ -19,7 +19,7 @@ public class NBTRequirementFactory {
         requirements.put(name, method);
     }
 
-    public static @Nullable INBTRequirement deserialize(JsonElement elt1) {
+    public static @Nullable INBTRequirement<?> deserialize(JsonElement elt1) {
         if (!(elt1 instanceof JsonObject)) return null;
         JsonObject elt = (JsonObject) elt1;
         String type = elt.get("type").getAsString();
@@ -28,7 +28,7 @@ public class NBTRequirementFactory {
         return requirements.get(type).create(data);
     }
 
-    public static JsonObject serialize(INBTRequirement modifier) {
+    public static JsonObject serialize(INBTRequirement<?> modifier) {
         JsonElement elt = modifier.serialize();
         JsonObject obj = new JsonObject();
         obj.addProperty("type", modifier.getName());

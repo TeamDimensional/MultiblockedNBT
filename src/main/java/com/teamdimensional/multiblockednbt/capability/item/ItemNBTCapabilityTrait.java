@@ -1,12 +1,7 @@
-package com.teamdimensional.multiblockednbt.capability;
+package com.teamdimensional.multiblockednbt.capability.item;
 
-import com.cleanroommc.multiblocked.Multiblocked;
 import com.cleanroommc.multiblocked.api.capability.trait.SingleCapabilityTrait;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.teamdimensional.multiblockednbt.MultiblockedNBT;
-import com.teamdimensional.multiblockednbt.component.NBTModificationRecipe;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;

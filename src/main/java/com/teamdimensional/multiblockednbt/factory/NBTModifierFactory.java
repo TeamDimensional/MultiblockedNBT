@@ -11,7 +11,7 @@ import java.util.Map;
 public class NBTModifierFactory {
 
     public interface NBTModifierSAM {
-        @Nullable INBTModifier create(JsonElement data);
+        @Nullable INBTModifier<?> create(JsonElement data);
     }
 
     private static final Map<String, NBTModifierSAM> modifiers = new HashMap<>();
@@ -19,7 +19,7 @@ public class NBTModifierFactory {
         modifiers.put(name, method);
     }
 
-    public static @Nullable INBTModifier deserialize(JsonElement elt1) {
+    public static @Nullable INBTModifier<?> deserialize(JsonElement elt1) {
         if (!(elt1 instanceof JsonObject)) return null;
         JsonObject elt = (JsonObject) elt1;
         String type = elt.get("type").getAsString();
@@ -28,7 +28,7 @@ public class NBTModifierFactory {
         return modifiers.get(type).create(data);
     }
 
-    public static JsonObject serialize(INBTModifier modifier) {
+    public static JsonObject serialize(INBTModifier<?> modifier) {
         JsonElement elt = modifier.serialize();
         JsonObject obj = new JsonObject();
         obj.addProperty("type", modifier.getName());

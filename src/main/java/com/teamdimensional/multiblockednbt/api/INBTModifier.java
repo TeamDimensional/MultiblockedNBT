@@ -2,13 +2,12 @@ package com.teamdimensional.multiblockednbt.api;
 
 import com.google.gson.JsonElement;
 import com.teamdimensional.multiblockednbt.component.StackWithTooltip;
-import net.minecraft.item.ItemStack;
 
-public interface INBTModifier {
-    boolean canApply(ItemStack stack);
-    ItemStack applyTo(ItemStack stack);
+public interface INBTModifier<T> {
+    boolean canApply(T stack);
+    T applyTo(T stack);
     JsonElement serialize();
     String getName();
 
-    default void modifyStack(StackWithTooltip stack) {}
+    default void modifyStack(StackWithTooltip<T> stack) {}
 }

@@ -1,12 +1,13 @@
 package com.teamdimensional.multiblockednbt;
 
 import com.cleanroommc.multiblocked.api.registry.MbdCapabilities;
-import com.teamdimensional.multiblockednbt.capability.ItemNBTMultiblockCapability;
-import com.teamdimensional.multiblockednbt.capability.StorageProcessImplementation;
+import com.teamdimensional.multiblockednbt.capability.item.ItemNBTMultiblockCapability;
+import com.teamdimensional.multiblockednbt.capability.item.StorageProcessImplementation;
 import com.teamdimensional.multiblockednbt.factory.NBTModifierFactory;
 import com.teamdimensional.multiblockednbt.factory.NBTRequirementFactory;
 import com.teamdimensional.multiblockednbt.modifier.NBTModifierEnchantment;
 import com.teamdimensional.multiblockednbt.requirement.NBTRequirementEnchantment;
+import com.teamdimensional.multiblockednbt.requirement.NBTRequirementFluid;
 import com.teamdimensional.multiblockednbt.requirement.NBTRequirementItem;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -27,9 +28,12 @@ public class MultiblockedNBT {
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER.info("Hello From {}!", Tags.MOD_NAME);
         MbdCapabilities.registerCapability(ItemNBTMultiblockCapability.INSTANCE);
-        NBTModifierFactory.register("ench", NBTModifierEnchantment::deserialize);
-        NBTRequirementFactory.register("ench", NBTRequirementEnchantment::deserialize);
-        NBTRequirementFactory.register("id", NBTRequirementItem::deserialize);
+
+        NBTModifierFactory.register("minecraft:enchantment", NBTModifierEnchantment::deserialize);
+        NBTRequirementFactory.register("minecraft:enchantment", NBTRequirementEnchantment::deserialize);
+        NBTRequirementFactory.register("minecraft:item_id", NBTRequirementItem::deserialize);
+
+        NBTRequirementFactory.register("minecraft:fluid_id", NBTRequirementFluid::deserialize);
         StorageProcessImplementation.register();
     }
 

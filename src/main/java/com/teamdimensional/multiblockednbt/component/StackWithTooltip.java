@@ -6,12 +6,12 @@ import net.minecraft.item.ItemStack;
 import java.util.LinkedList;
 import java.util.List;
 
-public class StackWithTooltip {
-    public ItemStack stack;
+public class StackWithTooltip<T> {
+    public T stack;
     public final List<String> tooltip = new LinkedList<>();
     public final IO io;
 
-    public StackWithTooltip(ItemStack stack, IO io) {
+    public StackWithTooltip(T stack, IO io) {
         this.stack = stack;
         this.io = io;
     }

@@ -1,4 +1,4 @@
-package com.teamdimensional.multiblockednbt.capability;
+package com.teamdimensional.multiblockednbt.capability.item;
 
 import com.cleanroommc.multiblocked.api.capability.IO;
 import com.cleanroommc.multiblocked.api.capability.MultiblockCapability;
@@ -8,7 +8,12 @@ import com.cleanroommc.multiblocked.api.gui.widget.imp.recipe.ContentWidget;
 import com.cleanroommc.multiblocked.api.recipe.Recipe;
 import com.cleanroommc.multiblocked.jei.IJeiIngredientAdapter;
 import com.google.gson.*;
+import com.teamdimensional.multiblockednbt.api.INBTModifier;
+import com.teamdimensional.multiblockednbt.api.INBTRecipeManager;
+import com.teamdimensional.multiblockednbt.api.INBTRequirement;
+import com.teamdimensional.multiblockednbt.capability.KnowledgeableCapabilityProxy;
 import com.teamdimensional.multiblockednbt.component.NBTContentWidget;
+import com.teamdimensional.multiblockednbt.component.NBTManagerRegistry;
 import com.teamdimensional.multiblockednbt.component.NBTModificationRecipe;
 import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IIngredientType;
@@ -22,13 +27,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModificationRecipe> {
+public class ItemNBTMultiblockCapability extends MultiblockCapability<ItemNBTMultiblockCapability.NBTModificationRecipeItem> {
     public static final ItemNBTMultiblockCapability INSTANCE = new ItemNBTMultiblockCapability();
 
     private ItemNBTMultiblockCapability() {
@@ -36,8 +40,8 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
     }
 
     @Override
-    public NBTModificationRecipe defaultContent() {
-        return new NBTModificationRecipe(new LinkedList<>(), new LinkedList<>());
+    public NBTModificationRecipeItem defaultContent() {
+        return new NBTModificationRecipeItem(NBTManagerRegistry.ITEMS, new LinkedList<>(), new LinkedList<>());
     }
 
     @Override
@@ -46,7 +50,7 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
     }
 
     @Override
-    public NBTModificationRecipe copyInner(NBTModificationRecipe nbtModificationRecipe) {
+    public NBTModificationRecipeItem copyInner(NBTModificationRecipeItem nbtModificationRecipe) {
         return nbtModificationRecipe.copy();
     }
 
@@ -61,27 +65,27 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
     }
 
     @Override
-    protected CapabilityProxy<? extends NBTModificationRecipe> createProxy(@Nonnull IO io, @Nonnull TileEntity tileEntity) {
+    protected CapabilityProxy<? extends NBTModificationRecipeItem> createProxy(@Nonnull IO io, @Nonnull TileEntity tileEntity) {
         return new ItemNBTCapabilityProxy(tileEntity);
     }
 
     @Override
-    public NBTModificationRecipe deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public NBTModificationRecipeItem deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         if (!(json instanceof JsonObject)) throw new JsonParseException("NBTMod recipes should be objects");
-        return NBTModificationRecipe.deserialize((JsonObject) json);
+        return NBTModificationRecipeItem.fromBase(NBTManagerRegistry.deserialize(NBTManagerRegistry.ITEMS, (JsonObject) json));
     }
 
     @Override
-    public JsonElement serialize(NBTModificationRecipe src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(NBTModificationRecipeItem src, Type typeOfSrc, JsonSerializationContext context) {
         return src.serialize();
     }
 
     @Override
-    public ContentWidget<? super NBTModificationRecipe> createContentWidget() {
+    public ContentWidget<? super NBTModificationRecipeItem> createContentWidget() {
         return new NBTContentWidget();
     }
 
-    public static class ItemNBTCapabilityProxy extends KnowledgeableCapabilityProxy<IItemHandler, NBTModificationRecipe> {
+    public static class ItemNBTCapabilityProxy extends KnowledgeableCapabilityProxy<IItemHandler, NBTModificationRecipeItem> {
 
         public ItemNBTCapabilityProxy(TileEntity tileEntity) {
             super(INSTANCE, tileEntity, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
@@ -102,19 +106,19 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
         }
 
         @Override
-        protected List<NBTModificationRecipe> handleRecipeInner(IO io, Recipe recipe, List<NBTModificationRecipe> left,
-                                                                @Nullable String slotName, boolean simulate) {
+        protected List<NBTModificationRecipeItem> handleRecipeInner(IO io, Recipe recipe, List<NBTModificationRecipeItem> left,
+                                                                    @Nullable String slotName, boolean simulate) {
             IItemHandler capability = getCapability(slotName);
             if (capability == null) return left;
 
-            Iterator<NBTModificationRecipe> iterator = left.iterator();
+            Iterator<NBTModificationRecipeItem> iterator = left.iterator();
             if (io == IO.IN) {
                 while (iterator.hasNext()) {
-                    NBTModificationRecipe ingredient = iterator.next();
+                    NBTModificationRecipeItem ingredient = iterator.next();
                     for (int i = 0; i < capability.getSlots(); i++) {
                         ItemStack itemStack = capability.getStackInSlot(i);
                         if (ingredient.canApply(itemStack)) {
-                            ItemStack extracted = capability.extractItem(i, 1, simulate);
+                            ItemStack extracted = capability.extractItem(i, ingredient.getProcessedQuantity(), simulate);
                             writeItemstack(extracted, simulate);
                             getTileEntity().markDirty();
                             iterator.remove();
@@ -126,7 +130,7 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
                 ItemStack stack = readItemstack(simulate);
                 if (stack != null && !stack.isEmpty()) {
                     while (iterator.hasNext()) {
-                        NBTModificationRecipe ingredient = iterator.next();
+                        NBTModificationRecipe<ItemStack> ingredient = iterator.next();
                         stack = ingredient.apply(stack);
                         for (int i = 0; i < capability.getSlots(); i++) {
                             stack = capability.insertItem(i, stack.copy(), simulate);
@@ -146,11 +150,26 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
         }
     }
 
-    public static class ItemNBTJEIAdapter implements IJeiIngredientAdapter<NBTModificationRecipe, ItemStack> {
+    public static class NBTModificationRecipeItem extends NBTModificationRecipe<ItemStack> {
+        public NBTModificationRecipeItem(INBTRecipeManager<ItemStack> manager, List<INBTModifier<ItemStack>> inbtModifiers, List<INBTRequirement<ItemStack>> inbtRequirements) {
+            super(manager, inbtModifiers, inbtRequirements);
+        }
+
+        public static NBTModificationRecipeItem fromBase(NBTModificationRecipe<ItemStack> recipe) {
+            return new NBTModificationRecipeItem(NBTManagerRegistry.ITEMS, recipe.getModifiers(), recipe.getRequirements());
+        }
 
         @Override
-        public Class<NBTModificationRecipe> getInternalIngredientType() {
-            return NBTModificationRecipe.class;
+        public NBTModificationRecipeItem copy() {
+            return fromBase(this);
+        }
+    }
+
+    public static class ItemNBTJEIAdapter implements IJeiIngredientAdapter<NBTModificationRecipeItem, ItemStack> {
+
+        @Override
+        public Class<NBTModificationRecipeItem> getInternalIngredientType() {
+            return NBTModificationRecipeItem.class;
         }
 
         @Override
@@ -159,8 +178,8 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<NBTModific
         }
 
         @Override
-        public Stream<ItemStack> apply(NBTModificationRecipe recipe) {
-            return Arrays.stream(recipe.getMatchingStacks(IO.BOTH)).map(r -> r.stack);
+        public Stream<ItemStack> apply(NBTModificationRecipeItem recipe) {
+            return recipe.getMatchingStacks(IO.BOTH).stream().map(r -> r.stack);
         }
     }
 }

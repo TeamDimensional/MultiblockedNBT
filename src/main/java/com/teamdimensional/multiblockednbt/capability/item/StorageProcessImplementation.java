@@ -1,4 +1,4 @@
-package com.teamdimensional.multiblockednbt.capability;
+package com.teamdimensional.multiblockednbt.capability.item;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.capabilities.CapabilityManager;

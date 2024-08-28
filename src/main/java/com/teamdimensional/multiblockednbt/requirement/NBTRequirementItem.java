@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 
 import java.util.Objects;
 
-public class NBTRequirementItem implements INBTRequirement {
+public class NBTRequirementItem implements INBTRequirement<ItemStack> {
     private final int metadata;
     private final Item item;
 
@@ -44,11 +44,11 @@ public class NBTRequirementItem implements INBTRequirement {
 
     @Override
     public String getName() {
-        return "id";
+        return "minecraft:item_id";
     }
 
     @Override
-    public void modifyStack(StackWithTooltip pair) {
+    public void modifyStack(StackWithTooltip<ItemStack> pair) {
         pair.stack = new ItemStack(item, 1, metadata);
     }
 }

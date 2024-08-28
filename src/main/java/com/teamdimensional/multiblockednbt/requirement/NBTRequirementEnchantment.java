@@ -12,7 +12,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
-public class NBTRequirementEnchantment implements INBTRequirement {
+public class NBTRequirementEnchantment implements INBTRequirement<ItemStack> {
     private final String enchantment;
     private final int targetLevel;
     private final short enchantmentId;
@@ -57,11 +57,11 @@ public class NBTRequirementEnchantment implements INBTRequirement {
 
     @Override
     public String getName() {
-        return "ench";
+        return "minecraft:enchantment";
     }
 
     @Override
-    public void modifyStack(StackWithTooltip pair) {
+    public void modifyStack(StackWithTooltip<ItemStack> pair) {
         if (pair.io != IO.OUT) {
             Enchantment ench = Enchantment.getEnchantmentByLocation(enchantment);
             assert ench != null;
