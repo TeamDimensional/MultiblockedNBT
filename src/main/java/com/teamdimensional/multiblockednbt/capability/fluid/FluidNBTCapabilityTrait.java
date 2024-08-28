@@ -17,8 +17,8 @@ public class FluidNBTCapabilityTrait extends SingleCapabilityTrait {
         super(FluidNBTMultiblockCapability.INSTANCE);
         storageProcessInventory = new StorageProcessImplementationFluid() {
             @Override
-            public void setItem(FluidStack stack, boolean simulate) {
-                super.setItem(stack, simulate);
+            public void setItem(String key, FluidStack stack, boolean simulate) {
+                super.setItem(key, stack, simulate);
                 markAsDirty();
             }
         };

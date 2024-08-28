@@ -43,7 +43,7 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
 
     @Override
     public NBTModificationRecipeFluid defaultContent() {
-        return new NBTModificationRecipeFluid(NBTManagerRegistry.FLUIDS, new LinkedList<>(), new LinkedList<>());
+        return new NBTModificationRecipeFluid(NBTManagerRegistry.FLUIDS, "_", new LinkedList<>(), new LinkedList<>());
     }
 
     @Override
@@ -93,18 +93,18 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
             super(INSTANCE, tileEntity, CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
         }
 
-        private void writeFluidstack(FluidStack stack, boolean simulate) {
+        private void writeFluidstack(String key, FluidStack stack, boolean simulate) {
             IStorageProcessCapabilityFluid capa = controller.getCapability(
                 StorageProcessStorageFluid.STORAGE_PROCESS_CAPABILITY, EnumFacing.NORTH);
             assert capa != null;
-            capa.setItem(stack, simulate);
+            capa.setItem(key, stack, simulate);
         }
 
-        private FluidStack readFluidstack(boolean simulate) {
+        private FluidStack readFluidstack(String key, boolean simulate) {
             IStorageProcessCapabilityFluid capa = controller.getCapability(
                 StorageProcessStorageFluid.STORAGE_PROCESS_CAPABILITY, EnumFacing.NORTH);
             assert capa != null;
-            return capa.getItem(simulate);
+            return capa.getItem(key, simulate);
         }
 
         @Override
@@ -123,7 +123,7 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
                         if (content != null && ingredient.canApply(content)) {
                             content.amount = ingredient.getProcessedQuantity();
                             FluidStack extracted = capability.drain(content, !simulate);
-                            writeFluidstack(extracted, simulate);
+                            writeFluidstack(ingredient.getKey(), extracted, simulate);
                             getTileEntity().markDirty();
                             iterator.remove();
                             break;
@@ -131,19 +131,16 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
                     }
                 }
             } else if (io == IO.OUT) {
-                FluidStack stack = readFluidstack(simulate);
-                if (stack != null && stack.amount > 0) {
-                    while (iterator.hasNext()) {
-                        NBTModificationRecipe<FluidStack> ingredient = iterator.next();
-                        stack = ingredient.apply(stack);
-                        int filledAmount = capability.fill(stack, !simulate);
-                        if (filledAmount == stack.amount) {
-                            iterator.remove();
-                            writeFluidstack(new FluidStack(FluidRegistry.WATER, 0), simulate);
-                        } else {
-                            writeFluidstack(stack, simulate);
-                        }
-                    }
+                if (!iterator.hasNext()) return left;
+                NBTModificationRecipe<FluidStack> ingredient = iterator.next();
+                FluidStack stack = readFluidstack(ingredient.getKey(), simulate);
+                stack = ingredient.apply(stack);
+                int filledAmount = capability.fill(stack, !simulate);
+                if (filledAmount == stack.amount) {
+                    iterator.remove();
+                    writeFluidstack(ingredient.getKey(), new FluidStack(FluidRegistry.WATER, 0), simulate);
+                } else {
+                    writeFluidstack(ingredient.getKey(), stack, simulate);
                 }
             }
 
@@ -152,12 +149,13 @@ public class FluidNBTMultiblockCapability extends MultiblockCapability<FluidNBTM
     }
 
     public static class NBTModificationRecipeFluid extends NBTModificationRecipe<FluidStack> {
-        public NBTModificationRecipeFluid(INBTRecipeManager<FluidStack> manager, List<INBTModifier<FluidStack>> inbtModifiers, List<INBTRequirement<FluidStack>> inbtRequirements) {
-            super(manager, inbtModifiers, inbtRequirements);
+        public NBTModificationRecipeFluid(
+            INBTRecipeManager<FluidStack> manager, String key, List<INBTModifier<FluidStack>> inbtModifiers, List<INBTRequirement<FluidStack>> inbtRequirements) {
+            super(manager, key, inbtModifiers, inbtRequirements);
         }
 
         public static NBTModificationRecipeFluid fromBase(NBTModificationRecipe<FluidStack> recipe) {
-            return new NBTModificationRecipeFluid(NBTManagerRegistry.FLUIDS, recipe.getModifiers(), recipe.getRequirements());
+            return new NBTModificationRecipeFluid(NBTManagerRegistry.FLUIDS, recipe.getKey(), recipe.getModifiers(), recipe.getRequirements());
         }
 
         @Override

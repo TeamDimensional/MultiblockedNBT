@@ -1,7 +1,7 @@
 apply from: 'gradle/scripts/helpers.gradle'
 
-def debug_deepresonance = false
-def run_xnet = false
+def debug_deepresonance = true
+def run_xnet = true
 
 final def mod_dependencies = [
         'had-enough-items-557549:4543375': [true],

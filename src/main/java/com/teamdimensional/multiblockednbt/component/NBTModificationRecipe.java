@@ -10,27 +10,27 @@ import com.teamdimensional.multiblockednbt.api.INBTRequirement;
 import com.teamdimensional.multiblockednbt.factory.NBTModifierFactory;
 import com.teamdimensional.multiblockednbt.factory.NBTRequirementFactory;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class NBTModificationRecipe<T> {
+    private final String key;
     protected final List<INBTModifier<T>> modifiers;
     protected final List<INBTRequirement<T>> requirements;
     protected final INBTRecipeManager<T> manager;
 
-    public NBTModificationRecipe(INBTRecipeManager<T> manager, INBTModifier<T>[] modifiers, INBTRequirement<T>[] requirements) {
-        this(manager, Arrays.stream(modifiers).collect(Collectors.toList()), Arrays.stream(requirements).collect(Collectors.toList()));
-    }
-
-    public NBTModificationRecipe(INBTRecipeManager<T> manager, List<INBTModifier<T>> modifiers, List<INBTRequirement<T>> requirements) {
+    public NBTModificationRecipe(INBTRecipeManager<T> manager, String key, List<INBTModifier<T>> modifiers, List<INBTRequirement<T>> requirements) {
+        this.key = key;
         this.manager = manager;
         this.modifiers = modifiers;
         this.requirements = requirements;
     }
 
+    public String getKey() {
+        return key;
+    }
+
     public NBTModificationRecipe<T> copy() {
-        return new NBTModificationRecipe<>(manager, modifiers, requirements);
+        return new NBTModificationRecipe<>(manager, key, modifiers, requirements);
     }
 
     public List<INBTModifier<T>> getModifiers() {
@@ -43,10 +43,10 @@ public class NBTModificationRecipe<T> {
 
     public boolean canApply(T stack) {
         if (manager.isEmpty(stack)) return false;
-        for (INBTRequirement<T> req : requirements) {
+        for (INBTRequirement<T> req : getRequirements()) {
             if (!req.satisfies(stack)) return false;
         }
-        for (INBTModifier<T> mod : modifiers) {
+        for (INBTModifier<T> mod : getModifiers()) {
             if (!mod.canApply(stack)) return false;
         }
         return true;
@@ -58,7 +58,7 @@ public class NBTModificationRecipe<T> {
     }
 
     public T apply(T stack) {
-        for (INBTModifier<T> mod : modifiers) {
+        for (INBTModifier<T> mod : getModifiers()) {
             stack = mod.applyTo(stack);
         }
         return stack;
@@ -77,8 +77,8 @@ public class NBTModificationRecipe<T> {
 
     public List<StackWithTooltip<T>> getMatchingStacks(IO io) {
         StackWithTooltip<T> pair = manager.getDefaultItem(io);
-        for (INBTRequirement<T> mod : requirements) mod.modifyStack(pair);
-        for (INBTModifier<T> mod : modifiers) mod.modifyStack(pair);
+        for (INBTRequirement<T> mod : getRequirements()) mod.modifyStack(pair);
+        for (INBTModifier<T> mod : getModifiers()) mod.modifyStack(pair);
         return ImmutableList.of(pair);
     }
 }

@@ -16,21 +16,32 @@ public class StorageProcessStorageFluid implements Capability.IStorage<IStorageP
     @Nullable
     @Override
     public NBTBase writeNBT(Capability<IStorageProcessCapabilityFluid> capability, IStorageProcessCapabilityFluid instance, EnumFacing side) {
-        NBTTagCompound simulated = new NBTTagCompound(), real = new NBTTagCompound();
-        instance.getItem(true).writeToNBT(simulated);
-        instance.getItem(false).writeToNBT(real);
+        NBTTagCompound simulatedList = new NBTTagCompound(), realList = new NBTTagCompound();
+        for (String s : instance.getKeys()) {
+            NBTTagCompound simulated = new NBTTagCompound(), real = new NBTTagCompound();
+            instance.getItem(s, true).writeToNBT(simulated);
+            instance.getItem(s, false).writeToNBT(real);
+            simulatedList.setTag(s, simulated);
+            realList.setTag(s, real);
+        }
         NBTTagCompound output = new NBTTagCompound();
-        output.setTag("simulated", simulated);
-        output.setTag("real", real);
+        output.setTag("simulatedList", simulatedList);
+        output.setTag("realList", realList);
         return output;
     }
 
     @Override
     public void readNBT(Capability<IStorageProcessCapabilityFluid> capability, IStorageProcessCapabilityFluid instance, EnumFacing side, NBTBase nbt) {
         NBTTagCompound comp = (NBTTagCompound) nbt;
-        FluidStack real = FluidStack.loadFluidStackFromNBT((NBTTagCompound) comp.getTag("real"));
-        FluidStack simulated = FluidStack.loadFluidStackFromNBT((NBTTagCompound) comp.getTag("simulated"));
-        instance.setItem(real, false);
-        instance.setItem(simulated, true);
+        NBTTagCompound realList = (NBTTagCompound) comp.getTag("realList");
+        for (String s : realList.getKeySet()) {
+            FluidStack real = FluidStack.loadFluidStackFromNBT((NBTTagCompound) realList.getTag(s));
+            instance.setItem(s, real, false);
+        }
+        NBTTagCompound simulatedList = (NBTTagCompound) comp.getTag("simulatedList");
+        for (String s : simulatedList.getKeySet()) {
+            FluidStack real = FluidStack.loadFluidStackFromNBT((NBTTagCompound) simulatedList.getTag(s));
+            instance.setItem(s, real, true);
+        }
     }
 }

@@ -43,7 +43,7 @@ public class NBTContentWidgetFluid extends ContentWidget<NBTModificationRecipe<F
             INBTRequirement<FluidStack> requirement = new NBTRequirementFluid((FluidStack) content);
             List<INBTRequirement<FluidStack>> reqs = new LinkedList<>();
             reqs.add(requirement);
-            return new NBTModificationRecipe<>(NBTManagerRegistry.FLUIDS, new LinkedList<>(), reqs);
+            return new NBTModificationRecipe<>(NBTManagerRegistry.FLUIDS, "_", new LinkedList<>(), reqs);
         }
         return null;
     }

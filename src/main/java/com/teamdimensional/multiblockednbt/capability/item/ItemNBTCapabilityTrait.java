@@ -19,8 +19,8 @@ public class ItemNBTCapabilityTrait extends SingleCapabilityTrait {
         super(ItemNBTMultiblockCapability.INSTANCE);
         storageProcessInventory = new StorageProcessImplementation() {
             @Override
-            public void setItem(ItemStack stack, boolean simulate) {
-                super.setItem(stack, simulate);
+            public void setItem(String key, ItemStack stack, boolean simulate) {
+                super.setItem(key, stack, simulate);
                 markAsDirty();
             }
         };
@@ -28,8 +28,10 @@ public class ItemNBTCapabilityTrait extends SingleCapabilityTrait {
 
     @Override
     public void onDrops(NonNullList<ItemStack> drops, EntityPlayer player) {
-        ItemStack stack = storageProcessInventory.getItem(false);
-        if (stack != null) drops.add(stack);
+        for (String key : storageProcessInventory.getKeys()) {
+            ItemStack stack = storageProcessInventory.getItem(key, false);
+            if (stack != null) drops.add(stack);
+        }
     }
 
     @Override

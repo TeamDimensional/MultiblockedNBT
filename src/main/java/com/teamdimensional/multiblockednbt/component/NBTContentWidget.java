@@ -28,7 +28,7 @@ public class NBTContentWidget extends ContentWidget<NBTModificationRecipe<ItemSt
             INBTRequirement<ItemStack> requirement = new NBTRequirementItem((ItemStack) content);
             List<INBTRequirement<ItemStack>> reqs = new LinkedList<>();
             reqs.add(requirement);
-            return new NBTModificationRecipe<>(NBTManagerRegistry.ITEMS, new LinkedList<>(), reqs);
+            return new NBTModificationRecipe<>(NBTManagerRegistry.ITEMS, "_", new LinkedList<>(), reqs);
         }
         return null;
     }

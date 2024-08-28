@@ -46,7 +46,8 @@ public class NBTManagerRegistry {
             }
             reqs.add(req);
         }
-        return new NBTModificationRecipe<T>(manager, mods, reqs);
+        String key = element.has("key") ? element.get("key").getAsString() : "_";
+        return new NBTModificationRecipe<T>(manager, key, mods, reqs);
     }
 
     private static class NBTManagerItem implements INBTRecipeManager<ItemStack> {

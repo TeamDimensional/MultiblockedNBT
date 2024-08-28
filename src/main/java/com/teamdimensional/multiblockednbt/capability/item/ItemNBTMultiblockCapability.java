@@ -41,7 +41,7 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<ItemNBTMul
 
     @Override
     public NBTModificationRecipeItem defaultContent() {
-        return new NBTModificationRecipeItem(NBTManagerRegistry.ITEMS, new LinkedList<>(), new LinkedList<>());
+        return new NBTModificationRecipeItem(NBTManagerRegistry.ITEMS, "_", new LinkedList<>(), new LinkedList<>());
     }
 
     @Override
@@ -91,18 +91,18 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<ItemNBTMul
             super(INSTANCE, tileEntity, CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
         }
 
-        private void writeItemstack(ItemStack stack, boolean simulate) {
+        private void writeItemstack(String key, ItemStack stack, boolean simulate) {
             IStorageProcessCapability capa = controller.getCapability(
                 StorageProcessStorage.STORAGE_PROCESS_CAPABILITY, EnumFacing.NORTH);
             assert capa != null;
-            capa.setItem(stack, simulate);
+            capa.setItem(key, stack, simulate);
         }
 
-        private ItemStack readItemstack(boolean simulate) {
+        private ItemStack readItemstack(String key, boolean simulate) {
             IStorageProcessCapability capa = controller.getCapability(
                 StorageProcessStorage.STORAGE_PROCESS_CAPABILITY, EnumFacing.NORTH);
             assert capa != null;
-            return capa.getItem(simulate);
+            return capa.getItem(key, simulate);
         }
 
         @Override
@@ -119,7 +119,7 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<ItemNBTMul
                         ItemStack itemStack = capability.getStackInSlot(i);
                         if (ingredient.canApply(itemStack)) {
                             ItemStack extracted = capability.extractItem(i, ingredient.getProcessedQuantity(), simulate);
-                            writeItemstack(extracted, simulate);
+                            writeItemstack(ingredient.getKey(), extracted, simulate);
                             getTileEntity().markDirty();
                             iterator.remove();
                             break;
@@ -127,22 +127,19 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<ItemNBTMul
                     }
                 }
             } else if (io == IO.OUT) {
-                ItemStack stack = readItemstack(simulate);
-                if (stack != null && !stack.isEmpty()) {
-                    while (iterator.hasNext()) {
-                        NBTModificationRecipe<ItemStack> ingredient = iterator.next();
-                        stack = ingredient.apply(stack);
-                        for (int i = 0; i < capability.getSlots(); i++) {
-                            stack = capability.insertItem(i, stack.copy(), simulate);
-                            if (stack.isEmpty()) break;
-                        }
-                        if (stack.isEmpty()) {
-                            iterator.remove();
-                            writeItemstack(ItemStack.EMPTY, simulate);
-                        } else {
-                            writeItemstack(stack, simulate);
-                        }
-                    }
+                if (!iterator.hasNext()) return left;
+                NBTModificationRecipe<ItemStack> ingredient = iterator.next();
+                ItemStack stack = readItemstack(ingredient.getKey(), simulate);
+                stack = ingredient.apply(stack);
+                for (int i = 0; i < capability.getSlots(); i++) {
+                    stack = capability.insertItem(i, stack.copy(), simulate);
+                    if (stack.isEmpty()) break;
+                }
+                if (stack.isEmpty()) {
+                    iterator.remove();
+                    writeItemstack(ingredient.getKey(), ItemStack.EMPTY, simulate);
+                } else {
+                    writeItemstack(ingredient.getKey(), stack, simulate);
                 }
             }
 
@@ -151,12 +148,13 @@ public class ItemNBTMultiblockCapability extends MultiblockCapability<ItemNBTMul
     }
 
     public static class NBTModificationRecipeItem extends NBTModificationRecipe<ItemStack> {
-        public NBTModificationRecipeItem(INBTRecipeManager<ItemStack> manager, List<INBTModifier<ItemStack>> inbtModifiers, List<INBTRequirement<ItemStack>> inbtRequirements) {
-            super(manager, inbtModifiers, inbtRequirements);
+        public NBTModificationRecipeItem(
+            INBTRecipeManager<ItemStack> manager, String key, List<INBTModifier<ItemStack>> inbtModifiers, List<INBTRequirement<ItemStack>> inbtRequirements) {
+            super(manager, key, inbtModifiers, inbtRequirements);
         }
 
         public static NBTModificationRecipeItem fromBase(NBTModificationRecipe<ItemStack> recipe) {
-            return new NBTModificationRecipeItem(NBTManagerRegistry.ITEMS, recipe.getModifiers(), recipe.getRequirements());
+            return new NBTModificationRecipeItem(NBTManagerRegistry.ITEMS, recipe.getKey(), recipe.getModifiers(), recipe.getRequirements());
         }
 
         @Override

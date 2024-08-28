@@ -16,21 +16,34 @@ public class StorageProcessStorage implements Capability.IStorage<IStorageProces
     @Nullable
     @Override
     public NBTBase writeNBT(Capability<IStorageProcessCapability> capability, IStorageProcessCapability instance, EnumFacing side) {
-        NBTTagCompound simulated = instance.getItem(true).serializeNBT();
-        NBTTagCompound real = instance.getItem(false).serializeNBT();
+        NBTTagCompound simulatedList = new NBTTagCompound(), realList = new NBTTagCompound();
+        for (String s : instance.getKeys()) {
+            NBTTagCompound simulated = new NBTTagCompound(), real = new NBTTagCompound();
+            instance.getItem(s, true).writeToNBT(simulated);
+            instance.getItem(s, false).writeToNBT(real);
+            simulatedList.setTag(s, simulated);
+            realList.setTag(s, real);
+        }
         NBTTagCompound output = new NBTTagCompound();
-        output.setTag("simulated", simulated);
-        output.setTag("real", real);
+        output.setTag("simulatedList", simulatedList);
+        output.setTag("realList", realList);
         return output;
     }
 
     @Override
     public void readNBT(Capability<IStorageProcessCapability> capability, IStorageProcessCapability instance, EnumFacing side, NBTBase nbt) {
-        ItemStack real = ItemStack.EMPTY, simulated = ItemStack.EMPTY;
         NBTTagCompound comp = (NBTTagCompound) nbt;
-        real.deserializeNBT((NBTTagCompound) comp.getTag("real"));
-        simulated.deserializeNBT((NBTTagCompound) comp.getTag("simulated"));
-        instance.setItem(real, false);
-        instance.setItem(simulated, true);
+        NBTTagCompound realList = (NBTTagCompound) comp.getTag("realList");
+        for (String s : realList.getKeySet()) {
+            ItemStack real = ItemStack.EMPTY;
+            real.deserializeNBT((NBTTagCompound) realList.getTag(s));
+            instance.setItem(s, real, false);
+        }
+        NBTTagCompound simulatedList = (NBTTagCompound) comp.getTag("simulatedList");
+        for (String s : simulatedList.getKeySet()) {
+            ItemStack simulated = ItemStack.EMPTY;
+            simulated.deserializeNBT((NBTTagCompound) simulatedList.getTag(s));
+            instance.setItem(s, simulated, true);
+        }
     }
 }
